@@ -1,13 +1,13 @@
 //FIRST MODULE: BUDGET MODULE
-var BudgetController = (function(){
+var BudgetController = (function() {
 
-  var Expense = function(id,description,value){
+  var Expense = function(id, description, value) {
     this.id = id;
     this.description = description;
     this.value = value;
   };
 
-  var Income = function(id,description,value){
+  var Income = function(id, description, value) {
     this.id = id;
     this.description = description;
     this.value = value;
@@ -17,43 +17,46 @@ var BudgetController = (function(){
 
   var data = {
 
-    allitems: {
-      exp:[],
-      inc:[]
-    }
+    allItems: {
+      exp: [],
+      inc: []
+    },
 
-    totals:{
-      exp:0,
-      inc:0
+    totals: {
+      exp: 0,
+      inc: 0
     }
 
   }
 
-return{
-  addItem: function(){
-    var newItem,ID;
+  return {
+    addItem: function(type, des, val) {
+      var newItem, ID;
 
-    //creating new ID
-    //we want ID = last ID + 1
-   //ID = 0;
-    ID = data.allitems[type][data.allitems.length - 1].id + 1;
+      //creating new ID
+      //we want ID = last ID + 1
+      if (data.allItems[type].length > 0) {
+        ID = data.allItems[type][data.allItems[type].length - 1].id + 1;
+      } else {
+        ID = 0;
+      }
 
-    //creating new item based on type being "inc" or "exp"
-    if(type === exp){
-       newItem = new Expense(type,des,val);
+      //creating new item based on type being "inc" or "exp"
+      if (type === "exp") {
+        newItem = new Expense(ID, des, val);
+      } else if (type === "inc") {
+        newItem = new Income(ID, des, val);
+      }
+
+      //pushing it into the data structure
+      data.allItems[type].push(newItem);
+      // returning the new element
+      return newItem;
+    },
+    testing: function() {
+      console.log(data);
     }
-    else if(type === inc){
-       newItem = new Income(type,des,val);
-    }
-
-    //pushing it into the data structure
-    data.allitems[type].push(newItem);
-
-    //returning the new element
-    return newItem;
-
-  }
-};
+  };
 
 
 })();
@@ -61,26 +64,51 @@ return{
 
 
 //UI MODULE
-var UiController = (function(){
+var UiController = (function() {
   //code here
 
   var DOMstrings = {
     inputType: ".add__type",
     inputDescription: ".add__description",
     inputValue: ".add__value",
-    inputButton: ".add__btn"
+    inputButton: ".add__btn",
+    incomeContainer: ".income__list",
+    expensesContainer: ".expenses__list"
   };
 
   return {
-    getInput: function(){
+    getInput: function() {
       return {
-         type: document.querySelector(DOMstrings.inputType).value,// will be either inc for income or exp for expenses
-         description: document.querySelector(DOMstrings.inputDescription).value,
-         value: document.querySelector(DOMstrings.inputValue).value
+        type: document.querySelector(DOMstrings.inputType).value, // will be either inc for income or exp for expenses
+        description: document.querySelector(DOMstrings.inputDescription).value,
+        value: document.querySelector(DOMstrings.inputValue).value
       };
     },
 
-    getDOMstrings: function(){
+    addListItem: function(obj, type) {
+      var html, newHtml, element;
+
+      //creating html string using placeholder text
+
+      if (type === "inc") {
+        element = DOMstrings.incomeContainer;
+        html = '<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+      } else if (type === "exp") {
+        element = DOMstrings.expensesContainer;
+        html = '<div class="item clearfix" id="expense-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+      }
+
+      //Replace placeholder with actual data
+
+      newHtml = html.replace("%id%", obj.id);
+      newHtml = newHtml.replace("%description%", obj.description); //becoz newHtml contains new modified string which is about to be modified again
+      newHtml = newHtml.replace("%value%", obj.value);
+
+      //Insert html into DOM
+      document.querySelector(element).insertAdjacentHTML("beforeend", newHtml);
+    },
+
+    getDOMstrings: function() {
       return DOMstrings;
     }
   };
@@ -88,17 +116,17 @@ var UiController = (function(){
 })();
 
 //GLOBAL APP MODULE, TO CONTROL ALL
-var AppController= (function(budgetCtrl,UiCtrl){
+var AppController = (function(budgetCtrl, UiCtrl) {
 
-  var setupEventListeners = function(){
+  var setupEventListeners = function() {
 
     var DOM = UiCtrl.getDOMstrings();
 
     document.querySelector(DOM.inputButton).addEventListener("click", ctrlAddItem);
 
-    document.addEventListener("keypress", function(event){
+    document.addEventListener("keypress", function(event) {
 
-      if(event.keyCode === 13 || event.which === 13){
+      if (event.keyCode === 13 || event.which === 13) {
         //console.log("Enter is pressed!");
         ctrlAddItem();
       }
@@ -109,14 +137,15 @@ var AppController= (function(budgetCtrl,UiCtrl){
 
 
   var ctrlAddItem = function() {
-    var input,newItem;
+    var input, newItem;
     //1. Get filled in data
     input = UiCtrl.getInput();
 
     //2. Add item to budget UiController
-    newItem = budgetCtrl.addItem(input.type,input.description,input.value);
-    
+    newItem = budgetCtrl.addItem(input.type, input.description, input.value);
+
     //3. Add item to UI
+    UiCtrl.addListItem(newItem, input.type);
 
     //4. Calculate the budget
 
@@ -124,14 +153,14 @@ var AppController= (function(budgetCtrl,UiCtrl){
 
   }
 
-  return{
-    init: function(){
+  return {
+    init: function() {
       console.log("App has started.");
       setupEventListeners();
     }
   }
 
 
-})(BudgetController,UiController);
+})(BudgetController, UiController);
 
-AppController.init();//
+AppController.init(); //
