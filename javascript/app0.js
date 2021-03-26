@@ -54,7 +54,7 @@ var BudgetController = (function() {
       return newItem;
     },
     testing: function() {
-      console.log(data);
+      console.log(data);//only for testing purposes not for production build
     }
   };
 
@@ -81,7 +81,7 @@ var UiController = (function() {
       return {
         type: document.querySelector(DOMstrings.inputType).value, // will be either inc for income or exp for expenses
         description: document.querySelector(DOMstrings.inputDescription).value,
-        value: document.querySelector(DOMstrings.inputValue).value
+        value: parseFloat(document.querySelector(DOMstrings.inputValue).value)//converts string to decimal no.
       };
     },
 
@@ -146,24 +146,35 @@ var AppController = (function(budgetCtrl, UiCtrl) {
 
   };
 
+  var updateBudget = function(){
+    //1. Calculate the budget
+
+    //2. Return the budget
+
+    //3. Display the budget on UI
+  };
+
 
   var ctrlAddItem = function() {
     var input, newItem;
     //1. Get filled in data
     input = UiCtrl.getInput();
 
-    //2. Add item to budget UiController
-    newItem = budgetCtrl.addItem(input.type, input.description, input.value);
+    if(input.description !=="" && !isNaN(input.value) && input.value > 0) {
 
-    //3. Add item to UI
-    UiCtrl.addListItem(newItem, input.type);
+      //2. Add item to budget UiController
+      newItem = budgetCtrl.addItem(input.type, input.description, input.value);
 
-    //4. Clear the fields
-    UiCtrl.clearFields();
+      //3. Add item to UI
+      UiCtrl.addListItem(newItem, input.type);
 
-    //5. Calculate the budget
+      //4. Clear the fields
+      UiCtrl.clearFields();
 
-    //6. Display budget on UI
+      //5. Calculate and update budget
+      updateBudget();
+
+    }
 
   }
 
