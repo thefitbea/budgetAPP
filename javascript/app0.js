@@ -13,6 +13,14 @@ var BudgetController = (function() {
     this.value = value;
   };
 
+  var calculateTotal = function(){
+    var sum = 0;
+    data.allItems[type].forEach(function(current){
+      sum += current.value;//sum = sum + current.value;
+    });
+    data.totals[type] = sum;
+  };
+
   //Data structures
 
   var data = {
@@ -25,8 +33,12 @@ var BudgetController = (function() {
     totals: {
       exp: 0,
       inc: 0
-    }
+    },
 
+    budget: 0
+    ,
+
+    percentage: -1//property is set to -1 to denote it doesnt exist at this time
   }
 
   return {
@@ -53,6 +65,18 @@ var BudgetController = (function() {
       // returning the new element
       return newItem;
     },
+
+    calculateBudget: function(){
+      //calculate total income and expenses
+      calculateTotal("exp");
+      calculateTotal("inc");
+      //calculate the budget: income - expenses
+      data.budget = data.totals.inc - data.totals.exp;
+      //calculate the percentage of income that we had already spent
+      data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
+    },
+
+
     testing: function() {
       console.log(data);//only for testing purposes not for production build
     }
