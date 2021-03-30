@@ -13,7 +13,7 @@ var BudgetController = (function() {
     this.value = value;
   };
 
-  var calculateTotal = function(){
+  var calculateTotal = function(type){
     var sum = 0;
     data.allItems[type].forEach(function(current){
       sum += current.value;//sum = sum + current.value;
@@ -73,7 +73,13 @@ var BudgetController = (function() {
       //calculate the budget: income - expenses
       data.budget = data.totals.inc - data.totals.exp;
       //calculate the percentage of income that we had already spent
-      data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
+      if(data.totals.inc > 0){
+        data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
+      }
+      else{
+        data.percentage = -1;
+      }
+
     },
 
     getBudget: function(){//only used to return things//get used to this
