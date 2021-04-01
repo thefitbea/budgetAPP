@@ -13,10 +13,10 @@ var BudgetController = (function() {
     this.value = value;
   };
 
-  var calculateTotal = function(type){
+  var calculateTotal = function(type) {
     var sum = 0;
-    data.allItems[type].forEach(function(current){
-      sum += current.value;//sum = sum + current.value;
+    data.allItems[type].forEach(function(current) {
+      sum += current.value; //sum = sum + current.value;
     });
     data.totals[type] = sum;
   };
@@ -35,10 +35,9 @@ var BudgetController = (function() {
       inc: 0
     },
 
-    budget: 0
-    ,
+    budget: 0,
 
-    percentage: -1//property is set to -1 to denote it doesnt exist at this time
+    percentage: -1 //property is set to -1 to denote it doesnt exist at this time
   }
 
   return {
@@ -66,23 +65,39 @@ var BudgetController = (function() {
       return newItem;
     },
 
-    calculateBudget: function(){
+    deleteItem: function(type, id) {
+      //id = 6
+      //ids = [1 2 4 6 8] unsorted so we can freely delete
+      //index = 3
+      var ids, index;
+      ids = data.allItems[type].map(function(current) {
+        return current.id;
+      });
+
+      index = ids.indexOf(id);
+
+      if (index !== -1) { // is -1 if not found in array
+        //splice method to remove elements
+        data.allItems[type].splice(index, 1); //1 denotes no of elements to remove
+      }
+    },
+
+    calculateBudget: function() {
       //calculate total income and expenses
       calculateTotal("exp");
       calculateTotal("inc");
       //calculate the budget: income - expenses
       data.budget = data.totals.inc - data.totals.exp;
       //calculate the percentage of income that we had already spent
-      if(data.totals.inc > 0){
+      if (data.totals.inc > 0) {
         data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
-      }
-      else{
+      } else {
         data.percentage = -1;
       }
 
     },
 
-    getBudget: function(){//only used to return things//get used to this
+    getBudget: function() { //only used to return things//get used to this
       return {
         budget: data.budget,
         totalInc: data.totals.inc,
@@ -93,7 +108,7 @@ var BudgetController = (function() {
 
 
     testing: function() {
-      console.log(data);//only for testing purposes not for production build
+      console.log(data); //only for testing purposes not for production build
     }
   };
 
@@ -125,7 +140,7 @@ var UiController = (function() {
       return {
         type: document.querySelector(DOMstrings.inputType).value, // will be either inc for income or exp for expenses
         description: document.querySelector(DOMstrings.inputDescription).value,
-        value: parseFloat(document.querySelector(DOMstrings.inputValue).value)//converts string to decimal no.
+        value: parseFloat(document.querySelector(DOMstrings.inputValue).value) //converts string to decimal no.
       };
     },
 
@@ -152,14 +167,14 @@ var UiController = (function() {
       document.querySelector(element).insertAdjacentHTML("beforeend", newHtml);
     },
 
-    clearFields: function(){
-      var fields,fieldsArr;
+    clearFields: function() {
+      var fields, fieldsArr;
       fields = document.querySelectorAll(DOMstrings.inputDescription + "," + DOMstrings.inputValue);
       fieldsArr = Array.prototype.slice.call(fields);
       fieldsArr.forEach(function(currentValue, arrayIndex, entireArray) {
-        currentValue.value = "";//resets fields to empty
+        currentValue.value = ""; //resets fields to empty
       });
-      fieldsArr[0].focus();//resets back to first input box of the field for convenience
+      fieldsArr[0].focus(); //resets back to first input box of the field for convenience
 
     },
 
@@ -168,10 +183,9 @@ var UiController = (function() {
       document.querySelector(DOMstrings.incomeLabel).textContent = obj.totalInc;
       document.querySelector(DOMstrings.expensesLabel).textContent = obj.totalExp;
 
-      if(obj.percentage > 0){
+      if (obj.percentage > 0) {
         document.querySelector(DOMstrings.percentageLabel).textContent = obj.percentage + "%";
-      }
-      else{
+      } else {
         document.querySelector(DOMstrings.percentageLabel).textContent = "----";
       }
     },
@@ -201,11 +215,11 @@ var AppController = (function(budgetCtrl, UiCtrl) {
 
     });
 
-    document.querySelector(DOM.container).addEventListener("click", ctrlDeleteItem);//here its DOM not DOMstringss
+    document.querySelector(DOM.container).addEventListener("click", ctrlDeleteItem); //here its DOM not DOMstringss
 
   };
 
-  var updateBudget = function(){
+  var updateBudget = function() {
     //1. Calculate the budget
     budgetCtrl.calculateBudget();
     //2. Return the budget
@@ -220,7 +234,7 @@ var AppController = (function(budgetCtrl, UiCtrl) {
     //1. Get filled in data
     input = UiCtrl.getInput();
 
-    if(input.description !=="" && !isNaN(input.value) && input.value > 0) {
+    if (input.description !== "" && !isNaN(input.value) && input.value > 0) {
 
       //2. Add item to budget UiController
       newItem = budgetCtrl.addItem(input.type, input.description, input.value);
@@ -240,19 +254,19 @@ var AppController = (function(budgetCtrl, UiCtrl) {
 
   var ctrlDeleteItem = function(event) {
 
-    var itemID, splitID;
-    itemID = console.log(event.target.parentNode.parentNode.parentNode.parentNode.id);//DOM traversal
-    if(itemID){
+    var itemID, splitID, type, ID;
+    itemID = event.target.parentNode.parentNode.parentNode.parentNode.id; //DOM traversal
+    if (itemID) {
       splitID = itemID.split("-");
       type = splitID[0];
-      ID = splitID[1];
+      ID = parseInt(splitID[1]); // is a string but we need a no. so use parse int to convert
 
       //1. delete item from DS
-
+      budgetCtrl.deleteItem(type, ID);
       //2. also delete it from UI
 
       //3. update and show new budget
-      
+
     }
 
   };
@@ -264,7 +278,7 @@ var AppController = (function(budgetCtrl, UiCtrl) {
         budget: 0,
         totalInc: 0,
         totalExp: 0,
-        percentage: 0// just a random obj set to zero
+        percentage: 0 // just a random obj set to zero
       });
       setupEventListeners();
     }
