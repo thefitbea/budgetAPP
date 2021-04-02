@@ -167,6 +167,12 @@ var UiController = (function() {
       document.querySelector(element).insertAdjacentHTML("beforeend", newHtml);
     },
 
+    deleteListItem: function(selectorID) {
+      var el = document.getElementById(selectorID);
+      el.parentNode.removeChild(el);//weird but thats how it works
+      //    https://blog.garstasio.com/you-dont-need-jquery/dom-manipulation/
+    },
+
     clearFields: function() {
       var fields, fieldsArr;
       fields = document.querySelectorAll(DOMstrings.inputDescription + "," + DOMstrings.inputValue);
@@ -264,9 +270,9 @@ var AppController = (function(budgetCtrl, UiCtrl) {
       //1. delete item from DS
       budgetCtrl.deleteItem(type, ID);
       //2. also delete it from UI
-
+      UiCtrl.deleteListItem(itemID);
       //3. update and show new budget
-
+      updateBudget();//reused code, DRY principle
     }
 
   };
