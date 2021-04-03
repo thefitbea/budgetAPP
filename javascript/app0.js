@@ -162,7 +162,8 @@ var UiController = (function() {
     incomeLabel: ".budget__income--value",
     expensesLabel: ".budget__expenses--value",
     percentageLabel: ".budget__expenses--percentage",
-    container: ".container"
+    container: ".container",
+    expensesPercLabel: ".item__percentage"
   };
 
   return {
@@ -226,6 +227,30 @@ var UiController = (function() {
       }
     },
 
+    displayPercentages: function(percentages){
+
+      var fields = document.querySelectorAll(DOMstrings.expensesPercLabel);//returns a list called nodelist, each element is called a node in DOM
+
+      //instead of slice hack lets create a custom forEach method only for nodelists instead of arrays
+
+      var nodeListForEach = function(list, callback){
+        for(var i = 0; i < list.length; i++){
+          callback(list[i],i);
+        }
+      };
+
+
+      nodeListForEach(fields, function(current, index){
+        if(percentages[index] > 0) {
+          current.textContent = percentages[index] + "%";
+        }
+        else{
+          current.textContent = "----";
+        }
+      });
+
+    },
+
     getDOMstrings: function() {
       return DOMstrings;
     }
@@ -273,7 +298,7 @@ var AppController = (function(budgetCtrl, UiCtrl) {
     var percentages = budgetCtrl.getPercentages();
 
     //3. update UI with new percentage
-    console.log(percentages);
+    UiCtrl.displayPercentages(percentages);
 
   };
 
