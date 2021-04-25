@@ -9,15 +9,14 @@ var BudgetController = (function() {
   };
 
   Expense.prototype.calcPercentage = function(totalIncome) {
-    if(totalIncome > 0){
-      this.percentage = Math.round((this.value/totalIncome)*100);
-    }
-    else{
+    if (totalIncome > 0) {
+      this.percentage = Math.round((this.value / totalIncome) * 100);
+    } else {
       this.percentage = -1;
     }
-  };//inheritance
+  }; //inheritance
 
-  Expense.prototype.getPercentage = function(){
+  Expense.prototype.getPercentage = function() {
     return this.percentage;
   }
   var Income = function(id, description, value) {
@@ -112,15 +111,15 @@ var BudgetController = (function() {
 
     calculatePercentages: function() {
 
-      data.allItems.exp.forEach(function(curr){
+      data.allItems.exp.forEach(function(curr) {
         curr.calcPercentage(data.totals.inc);
       });
 
     },
 
-    getPercentages: function(){
+    getPercentages: function() {
 
-      var allPerc = data.allItems.exp.map(function(curr){
+      var allPerc = data.allItems.exp.map(function(curr) {
         return curr.getPercentage();
       });
       return allPerc;
@@ -166,6 +165,31 @@ var UiController = (function() {
     expensesPercLabel: ".item__percentage"
   };
 
+
+  var formatNumber = function(num, type) {
+
+    var numSplit, int, dec, type;
+    /*
+    + or - before a number
+    exactly 2 decimal points
+    comma seperating the 1000's
+    2310.4567 -> +2,310.46
+    */
+    num = Math.abs(num); // abs is absolute , it removes sign of number
+    num = num.toFixed(2); // method of number prototype
+
+    numSplit = num.split("."); //splits the outcome of num which is a string into two, one part which is integr and other is decimal
+    int = numSplit[0];
+    if (int.length > 3) {
+      int = int.substr(0, int.length - 3) + "," + int.substr(int.length - 3, 3); //if input is 2310 then output is 2,310
+    }
+
+    dec = numSplit[1];
+
+    return (type === "exp" ? "-" : "+") + "" + int + "." + dec;
+  };
+
+
   return {
     getInput: function() {
       return {
@@ -192,7 +216,7 @@ var UiController = (function() {
 
       newHtml = html.replace("%id%", obj.id);
       newHtml = newHtml.replace("%description%", obj.description); //becoz newHtml contains new modified string which is about to be modified again
-      newHtml = newHtml.replace("%value%", obj.value);
+      newHtml = newHtml.replace("%value%", formatNumber(obj.value, type));
 
       //Insert html into DOM
       document.querySelector(element).insertAdjacentHTML("beforeend", newHtml);
@@ -200,7 +224,7 @@ var UiController = (function() {
 
     deleteListItem: function(selectorID) {
       var el = document.getElementById(selectorID);
-      el.parentNode.removeChild(el);//weird but thats how it works
+      el.parentNode.removeChild(el); //weird but thats how it works
       //    https://blog.garstasio.com/you-dont-need-jquery/dom-manipulation/
     },
 
@@ -216,9 +240,11 @@ var UiController = (function() {
     },
 
     displayBudget: function(obj) {
-      document.querySelector(DOMstrings.budgetLabel).textContent = obj.budget;
-      document.querySelector(DOMstrings.incomeLabel).textContent = obj.totalInc;
-      document.querySelector(DOMstrings.expensesLabel).textContent = obj.totalExp;
+      var type;
+      obj.budget > 0 ? type = "inc" : type = "exp";
+      document.querySelector(DOMstrings.budgetLabel).textContent = formatNumber(obj.budget, type);
+      document.querySelector(DOMstrings.incomeLabel).textContent = formatNumber(obj.totalInc, "inc");
+      document.querySelector(DOMstrings.expensesLabel).textContent = formatNumber(obj.totalExp, "exp");
 
       if (obj.percentage > 0) {
         document.querySelector(DOMstrings.percentageLabel).textContent = obj.percentage + "%";
@@ -227,29 +253,29 @@ var UiController = (function() {
       }
     },
 
-    displayPercentages: function(percentages){
+    displayPercentages: function(percentages) {
 
-      var fields = document.querySelectorAll(DOMstrings.expensesPercLabel);//returns a list called nodelist, each element is called a node in DOM
+      var fields = document.querySelectorAll(DOMstrings.expensesPercLabel); //returns a list called nodelist, each element is called a node in DOM
 
       //instead of slice hack lets create a custom forEach method only for nodelists instead of arrays
 
-      var nodeListForEach = function(list, callback){
-        for(var i = 0; i < list.length; i++){
-          callback(list[i],i);
+      var nodeListForEach = function(list, callback) {
+        for (var i = 0; i < list.length; i++) {
+          callback(list[i], i);
         }
       };
 
 
-      nodeListForEach(fields, function(current, index){
-        if(percentages[index] > 0) {
+      nodeListForEach(fields, function(current, index) {
+        if (percentages[index] > 0) {
           current.textContent = percentages[index] + "%";
-        }
-        else{
+        } else {
           current.textContent = "----";
         }
       });
 
     },
+
 
     getDOMstrings: function() {
       return DOMstrings;
@@ -342,7 +368,7 @@ var AppController = (function(budgetCtrl, UiCtrl) {
       //2. also delete it from UI
       UiCtrl.deleteListItem(itemID);
       //3. update and show new budget
-      updateBudget();//reused code, DRY principle
+      updateBudget(); //reused code, DRY principle
       //4. calc and update percentage
       updatePercentages();
     }
